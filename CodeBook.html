@@ -64,7 +64,33 @@ img {
 </div>
 
 
-<p>The data used for this project are described in and were obtained from <a href="http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones">here</a>. Briefly, each of 30 volunteers performed six activities (WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING, LAYING) wearing a smartphone on the waist. Using its embedded accelerometer and gyroscope, 561 measurements were obtained for each record (time point) while performing each activity. The obtained dataset has been randomly partitioned into two sets, where 70% of the volunteers was selected for generating the training data and 30% the test data.</p>
+<p>The data used for this project are described in and were obtained from <a href="http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones">here</a>. Briefly, each of 30 volunteers performed six activities (WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING, LAYING) wearing a smartphone on the waist. Using its embedded accelerometer and gyroscope, 561 measurements were obtained for each record (time point) while performing each activity. These measurements come from the accelerometer and gyroscope 3-axial raw signals tAcc-XYZ and tGyro-XYZ. These time domain signals (prefix ‘t’ to denote time) were captured at a constant rate of 50 Hz. Then they were filtered using a median filter and a 3rd order low pass Butterworth filter with a corner frequency of 20 Hz to remove noise. Similarly, the acceleration signal was then separated into body and gravity acceleration signals (tBodyAcc-XYZ and tGravityAcc-XYZ) using another low pass Butterworth filter with a corner frequency of 0.3 Hz. Subsequently, the body linear acceleration and angular velocity were derived in time to obtain Jerk signals (tBodyAccJerk-XYZ and tBodyGyroJerk-XYZ). Also the magnitude of these three-dimensional signals were calculated using the Euclidean norm (tBodyAccMag, tGravityAccMag, tBodyAccJerkMag, tBodyGyroMag, tBodyGyroJerkMag). Finally a Fast Fourier Transform (FFT) was applied to some of these signals producing fBodyAcc-XYZ, fBodyAccJerk-XYZ, fBodyGyro-XYZ, fBodyAccJerkMag, fBodyGyroMag, fBodyGyroJerkMag. (Note the ‘f’ to indicate frequency domain signals).</p>
+<p>These signals were used to estimate variables of the feature vector for each pattern:<br />‘-XYZ’ is used to denote 3-axial signals in the X, Y and Z directions.</p>
+<ul>
+<li>tBodyAcc-XYZ</li>
+<li>tGravityAcc-XYZ</li>
+<li>tBodyAccJerk-XYZ</li>
+<li>tBodyGyro-XYZ</li>
+<li>tBodyGyroJerk-XYZ</li>
+<li>tBodyAccMag</li>
+<li>tGravityAccMag</li>
+<li>tBodyAccJerkMag</li>
+<li>tBodyGyroMag</li>
+<li>tBodyGyroJerkMag</li>
+<li>fBodyAcc-XYZ</li>
+<li>fBodyAccJerk-XYZ</li>
+<li>fBodyGyro-XYZ</li>
+<li>fBodyAccMag</li>
+<li>fBodyAccJerkMag</li>
+<li>fBodyGyroMag</li>
+<li>fBodyGyroJerkMag</li>
+</ul>
+<p>The set of variables that were estimated from these signals are:</p>
+<ul>
+<li>mean(): Mean value</li>
+<li>std(): Standard deviation</li>
+</ul>
+<p>The obtained dataset has been randomly partitioned into two sets, where 70% of the volunteers was selected for generating the training data and 30% the test data.</p>
 <p>The test and training datasets are each split into three parts:</p>
 <ul>
 <li>The ‘subject’ part containing the subject id for each record</li>
@@ -89,9 +115,9 @@ data.y = rbind(test.y, train.y)</code></pre>
 <p>Read descriptive variable and activity names from the supplied zip file in the working directory.</p>
 <pre class="r"><code>features = read.table(unz(&quot;getdata-projectfiles-UCI HAR Dataset.zip&quot;, &quot;UCI HAR Dataset/features.txt&quot;))
 activity_labels = read.table(unz(&quot;getdata-projectfiles-UCI HAR Dataset.zip&quot;, &quot;UCI HAR Dataset/activity_labels.txt&quot;), col.names = c('activity', 'label'))</code></pre>
-<p>Appropriately labels the X dataset with descriptive variable names.</p>
+<p>Appropriately label the X dataset with descriptive variable names.</p>
 <pre class="r"><code>names(data.X) = features[, 2]</code></pre>
-<p>Extracts only the measurements on the mean and standard deviation for each measurement.</p>
+<p>Extract only the measurements on the mean and standard deviation for each measurement.</p>
 <pre class="r"><code>data.X = data.X[, grepl('-(mean|std)\\(\\)', names(data.X))]</code></pre>
 <p>Use descriptive activity names to name the activities in the y dataset.</p>
 <pre class="r"><code>data.y %&lt;&gt;% mutate(activity = as.factor(activity))
@@ -99,7 +125,7 @@ activity_labels = read.table(unz(&quot;getdata-projectfiles-UCI HAR Dataset.zip&
 levels(data.y$activity) = activity_labels$label</code></pre>
 <p>Finally merge the subject, X and y datasets into a single tidy dataset.</p>
 <pre class="r"><code>data = cbind(data.subject, data.y, data.X)</code></pre>
-<p>Creates a second, independent tidy dataset with the average of each variable for each activity and each subject, print it and then write it to disk.</p>
+<p>Create a second, independent tidy dataset with the average of each variable for each activity and each subject, print it, and then write it to disk.</p>
 <pre class="r"><code>data = tbl_df(data)
 
 data %&lt;&gt;% group_by(subject, activity) %&gt;% summarise_each(funs(mean))
