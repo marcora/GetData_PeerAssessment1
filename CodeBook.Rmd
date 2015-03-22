@@ -1,0 +1,86 @@
+---
+title: "Getting and Cleaning Data Course Project"
+output:
+  html_document:
+    keep_md: yes
+---
+
+The data used for this project are described in and were obtained from [here](http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones). Briefly, each of 30 volunteers performed six activities (WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING, LAYING) wearing a smartphone on the waist. Using its embedded accelerometer and gyroscope, 561 measurements were obtained for each record (time point) while performing each activity. The obtained dataset has been randomly partitioned into two sets, where 70% of the volunteers was selected for generating the training data and 30% the test data.
+
+The test and training datasets are each split into three parts:
+
+- The 'subject' part containing the subject id for each record
+- The 'X' part containing the 561 measurements for each record
+- The 'y' part containing the activity id for each record
+
+First, load some useful packages.
+
+```{r, message = FALSE, warning = FALSE}
+library(dplyr)
+library(magrittr)
+```
+
+Second, read the subject, X and y parts of the test and training datasets from the supplied zip file in the working directory.
+
+```{r}
+test.subject = read.table(unz("getdata-projectfiles-UCI HAR Dataset.zip", "UCI HAR Dataset/test/subject_test.txt"), col.names = c('subject'))
+test.X = read.table(unz("getdata-projectfiles-UCI HAR Dataset.zip", "UCI HAR Dataset/test/X_test.txt"))
+test.y = read.table(unz("getdata-projectfiles-UCI HAR Dataset.zip", "UCI HAR Dataset/test/y_test.txt"), col.names = c('activity'))
+
+train.subject = read.table(unz("getdata-projectfiles-UCI HAR Dataset.zip", "UCI HAR Dataset/train/subject_train.txt"), col.names = c('subject'))
+train.X = read.table(unz("getdata-projectfiles-UCI HAR Dataset.zip", "UCI HAR Dataset/train/X_train.txt"))
+train.y = read.table(unz("getdata-projectfiles-UCI HAR Dataset.zip", "UCI HAR Dataset/train/y_train.txt"), col.names = c('activity'))
+```
+
+Then, merge the test and training datasets for each part to create one dataset per part.
+
+```{r}
+data.subject = rbind(test.subject, train.subject)
+data.X = rbind(test.X, train.X)
+data.y = rbind(test.y, train.y)
+```
+
+Read descriptive variable and activity names from the supplied zip file in the working directory.
+
+```{r}
+features = read.table(unz("getdata-projectfiles-UCI HAR Dataset.zip", "UCI HAR Dataset/features.txt"))
+activity_labels = read.table(unz("getdata-projectfiles-UCI HAR Dataset.zip", "UCI HAR Dataset/activity_labels.txt"), col.names = c('activity', 'label'))
+```
+
+Appropriately labels the X dataset with descriptive variable names.
+
+```{r}
+names(data.X) = features[, 2]
+```
+
+Extracts only the measurements on the mean and standard deviation for each measurement.
+
+```{r}
+data.X = data.X[, grepl('-(mean|std)\\(\\)', names(data.X))]
+```
+
+Use descriptive activity names to name the activities in the y dataset.
+
+```{r}
+data.y %<>% mutate(activity = as.factor(activity))
+
+levels(data.y$activity) = activity_labels$label
+```
+
+Finally merge the subject, X and y datasets into a single tidy dataset.
+
+```{r}
+data = cbind(data.subject, data.y, data.X)
+```
+
+Creates a second, independent tidy dataset with the average of each variable for each activity and each subject, print it and then write it to disk.
+
+```{r}
+data = tbl_df(data)
+
+data %<>% group_by(subject, activity) %>% summarise_each(funs(mean))
+
+data
+
+write.table(data, "data.txt", row.names = FALSE)
+```
